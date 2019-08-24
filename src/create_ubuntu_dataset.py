@@ -256,8 +256,12 @@ def prepare_data_maybe_download(directory):
     archive_path = os.path.join(directory,filename)
     if not os.path.exists(archive_path):
         # archive missing, download it
-        print("Downloading %s to %s" % (url, archive_path))
-        filepath, _ = urllib.request.urlretrieve(url, archive_path)
+        try:
+            print("Downloading %s to %s" % (url, archive_path))
+            filepath, _ = urllib.request.urlretrieve(url, archive_path)
+        except Exception as e:
+            print("Downloading error = {}".format(str(e)))
+            return 
         print("Successfully downloaded ") + filepath
 
     # unpack data
