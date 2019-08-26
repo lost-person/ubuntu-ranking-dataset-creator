@@ -1,3 +1,5 @@
+# coding = utf-8
+
 import argparse
 import os
 import unicodecsv
@@ -33,7 +35,7 @@ def translate_dialog_to_lists(dialog_filename):
     :return:
     """
 
-    dialog_file = open(dialog_filename, 'r')
+    dialog_file = open(dialog_filename, 'rb')
     dialog_reader = unicodecsv.reader(dialog_file, delimiter='\t',quoting=csv.QUOTE_NONE)
 
     # go through the dialog
@@ -284,17 +286,17 @@ if __name__ == '__main__':
         rng = random.Random(args.seed)
         # training dataset
         f = open(os.path.join("meta", file_list_csv), 'r')
-        dialog_paths = map(lambda path: os.path.join(args.data_root, "dialogs", path), convert_csv_with_dialog_paths(f))
+        dialog_paths = list(map(lambda path: os.path.join(args.data_root, "dialogs", path), convert_csv_with_dialog_paths(f)))
 
         data_set = create_examples(dialog_paths,
                                    len(dialog_paths),
                                    lambda context_dialog, candidates : create_single_dialog_test_example(context_dialog, candidates, rng,
                                                                      args.n, args.max_context_length))
         # output the dataset
-        w = unicodecsv.writer(open(args.output, 'w'), encoding='utf-8')
+        w = unicodecsv.writer(open(args.output, 'wb'), encoding='utf-8')
         # header
         header = ["Context", "Ground Truth Utterance"]
-        header.extend(map(lambda x: "Distractor_{}".format(x), xrange(args.n)))
+        header.extend(map(lambda x: "Distractor_{}".format(x), range(args.n)))
         w.writerow(header)
 
         stemmer = SnowballStemmer("english")
@@ -311,7 +313,7 @@ if __name__ == '__main__':
                 if args.lemmatize:
                     translated_row = map(lambda sub: map(lambda tok: lemmatizer.lemmatize(tok, pos='v'), sub), translated_row)
                     
-                translated_row = map(lambda x: " ".join(x), translated_row)
+                translated_row = list(map(lambda x: " ".join(x), translated_row))
 
             w.writerow(translated_row)
         print("Dataset stored in: {}".format(args.output))
@@ -323,7 +325,7 @@ if __name__ == '__main__':
         # training dataset
 
         f = open(os.path.join("meta", "trainfiles.csv"), 'r')
-        dialog_paths = map(lambda path: os.path.join(args.data_root, "dialogs", path), convert_csv_with_dialog_paths(f))
+        dialog_paths = list(map(lambda path: os.path.join(args.data_root, "dialogs", path), convert_csv_with_dialog_paths(f)))
 
         train_set = create_examples(dialog_paths,
                                     args.examples,
@@ -335,7 +337,7 @@ if __name__ == '__main__':
         lemmatizer = WordNetLemmatizer()
 
         # output the dataset
-        w = unicodecsv.writer(open(args.output, 'w'), encoding='utf-8')
+        w = unicodecsv.writer(open(args.output, 'wb'), encoding='utf-8')
         # header
         w.writerow(["Context", "Utterance", "Label"])
         for row in train_set:
@@ -349,7 +351,7 @@ if __name__ == '__main__':
                 if args.lemmatize:
                     translated_row = map(lambda sub: map(lambda tok: lemmatizer.lemmatize(tok, pos='v'), sub), translated_row)
 
-                translated_row = map(lambda x: " ".join(x), translated_row)
+                translated_row = list(map(lambda x: " ".join(x), translated_row))
                 translated_row.append(int(float(row[2])))
 
             w.writerow(translated_row)
